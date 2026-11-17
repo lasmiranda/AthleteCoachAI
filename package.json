@@ -1,0 +1,17 @@
+{
+  "name": "athleteos-daily-coach",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Local demo-first AthleteOS frontend and Python backend",
+  "scripts": {
+    "start": "python -m athleteos.server",
+    "typecheck": "tsc -p jsconfig.json",
+    "test": "python -m unittest discover -s tests -p test_*.py -v",
+    "test:browser": "playwright test",
+    "build": "npm run typecheck && python -m compileall -q athleteos && node --check web/app.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "typescript": "^5.9.3"
+  }
+}

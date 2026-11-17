@@ -1,0 +1,60 @@
+{
+  "manifest_version": 1,
+  "reviewed_on": "2026-11-05",
+  "sources": {
+    "runners": {
+      "title": "Replication Data for: Injury Prediction In Competitive Runners With Machine Learning",
+      "landing_url": "https://doi.org/10.34894/UWU9PV",
+      "metadata_url": "https://dataverse.nl/api/datasets/:persistentId/?persistentId=doi:10.34894/UWU9PV",
+      "version": "2.0",
+      "license": "CC0-1.0",
+      "citation": "Lovdal, den Hartigh, Azzopardi (2021), doi:10.34894/UWU9PV, version 2.0.",
+      "task": "Source injury/no-injury event label from preceding daily or weekly training features. Research only; not a validated individual medical product.",
+      "files": [
+        {"name": "README.txt", "url": "https://dataverse.nl/api/access/datafile/422690", "bytes": 5750, "sha1": "ce2cd69963ca27c9d18cceed58da9b63e7a035ce"},
+        {"name": "day_approach_maskedID_timeseries.csv", "url": "https://dataverse.nl/api/access/datafile/47972", "bytes": 13547450, "sha1": "c6edbd3aefb2f61e62971d629012fa2890e1ea6a"},
+        {"name": "week_approach_maskedID_timeseries.csv", "url": "https://dataverse.nl/api/access/datafile/47971", "bytes": 15152612, "sha1": "dd3eed3abb8014d6a69ffc6f6b569bcf0660805e"}
+      ]
+    },
+    "pamap2": {
+      "title": "PAMAP2 Physical Activity Monitoring",
+      "landing_url": "https://archive.ics.uci.edu/dataset/231/pamap2+physical+activity+monitoring",
+      "license": "CC BY 4.0",
+      "citation": "Reiss, A. (2012). PAMAP2 Physical Activity Monitoring [Dataset]. UCI. doi:10.24432/C5NW2H.",
+      "task": "Sensor activity classification; not readiness, longitudinal fatigue, injury or measured hypertrophy.",
+      "size_note": "Landing page: 656.3 MB; nested ZIP. Large acquisition requires an explicit --allow-large flag.",
+      "files": [
+        {"name": "pamap2.zip", "url": "https://archive.ics.uci.edu/static/public/231/pamap2+physical+activity+monitoring.zip", "bytes": 688226940, "max_bytes": 750000000}
+      ]
+    },
+    "fitrec": {
+      "title": "FitRec / Endomondo",
+      "landing_url": "https://cseweb.ucsd.edu/~jmcauley/datasets/fitrec.html",
+      "license": "Academic use only; no commercial use; no redistribution",
+      "citation": "Ni, Muhlstein, McAuley (2019). Modeling heart rate and activity data for personalized fitness recommendation. WWW. https://cseweb.ucsd.edu/~jmcauley/pdfs/www19.pdf",
+      "code_reference": "https://github.com/nijianmo/fit-rec/tree/107f37d32e57f1a4ac9bae0a60cb9689751026ad",
+      "task": "Heart-rate/activity sequence prediction. No direct readiness, injury or muscle-growth targets.",
+      "size_note": "Official HEAD: raw gzip 1995378519 bytes; metadata gzip 1088266461; filtered text 4929126138; processed NPY 8011208302; interpolated NPY 6457513404. No download without academic-use and size decisions.",
+      "files": [
+        {"name": "endomondoHR.json.gz", "url": "https://mcauleylab.ucsd.edu/public_datasets/gdrive/fitrec/endomondoHR.json.gz", "bytes": 1995378519},
+        {"name": "endomondoHR_proper.json", "url": "https://mcauleylab.ucsd.edu/public_datasets/gdrive/fitrec/endomondoHR_proper.json", "bytes": 4929126138},
+        {"name": "endomondoMeta.json.gz", "url": "https://mcauleylab.ucsd.edu/public_datasets/gdrive/fitrec/endomondoMeta.json.gz", "bytes": 1088266461},
+        {"name": "processed_endomondoHR_proper.npy", "url": "https://mcauleylab.ucsd.edu/public_datasets/gdrive/fitrec/processed_endomondoHR_proper.npy", "bytes": 8011208302},
+        {"name": "processed_endomondoHR_proper_interpolate.npy", "url": "https://mcauleylab.ucsd.edu/public_datasets/gdrive/fitrec/processed_endomondoHR_proper_interpolate.npy", "bytes": 6457513404}
+      ]
+    },
+    "garmin": {
+      "title": "Garmin Connect Developer Program",
+      "landing_url": "https://developer.garmin.com/gc-developer-program/overview/",
+      "license": "Authenticated authorized API access, not an open training dataset",
+      "task": "Future consented user data. Personal tokens require user-owned credentials; Business Starter/Enterprise requires Garmin program application. No authentication or application performed.",
+      "files": []
+    },
+    "hypertrophy-review": {
+      "title": "A Systematic Review of The Effects of Different Resistance Training Volumes on Muscle Hypertrophy",
+      "landing_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8884877/",
+      "task": "Evidence synthesis: seven qualitative/six quantitative studies, trained young men, ultrasound outcomes; not a row-level athlete dataset. No moderate-versus-high difference for quadriceps/biceps, different triceps result. Does not provide labels for AthleteOS.",
+      "files": []
+    }
+  }
+}

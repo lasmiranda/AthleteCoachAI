@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img" aria-labelledby="title desc">
+<title id="title">Datos reales preparados: fuentes y particiones</title>
+<desc id="desc">PAMAP2: 3833 ventanas, nueve participantes, división por participante 2352/977/504 ventanas y 5/2/2 personas. Corredores: 42766 filas diarias y 42798 semanales de los mismos 74 participantes; no sumar como cohortes independientes.</desc>
+<rect width="1800" height="1200" fill="#ffffff"/>
+<g font-family="Segoe UI,Arial,sans-serif" fill="#172d39">
+<text x="60" y="85" font-size="46" font-weight="700">Datos reales preparados: fuentes y particiones</text>
+<text x="60" y="135" font-size="26" fill="#496170">Investigación local · Reporte de adquisición: 5 nov 2026 · Gráfico: 10 nov 2026</text>
+<rect x="60" y="180" width="1680" height="400" rx="20" fill="#edf6fa"/>
+<text x="95" y="235" font-size="36" font-weight="700" fill="#197dad">PAMAP2 Protocol · CC BY 4.0</text>
+<text x="95" y="290" font-size="33" font-weight="700">3,833 ventanas · 9 participantes · 12 actividades · 120 features</text>
+<text x="95" y="338" font-size="27">2,872,533 muestras fuente; ventanas no solapadas de 5 s. Optional excluido.</text>
+<rect x="95" y="375" width="976" height="75" fill="#197dad"/>
+<rect x="1071" y="375" width="406" height="75" fill="#338c78"/>
+<rect x="1477" y="375" width="208" height="75" fill="#72569f"/>
+<g fill="white" font-size="32" font-weight="700"><text x="125" y="424">2,352</text><text x="1100" y="424">977</text><text x="1500" y="424">504</text></g>
+<text x="95" y="495" font-size="27" fill="#197dad">Entrenamiento: 5 personas</text>
+<text x="730" y="495" font-size="27" fill="#338c78">Validación: 2</text>
+<text x="1370" y="495" font-size="27" fill="#72569f">Prueba: 2</text>
+<text x="95" y="548" font-size="27" font-weight="700">Partición por participante: cero solapamiento entre train, validación y prueba.</text>
+<rect x="60" y="615" width="1680" height="310" rx="20" fill="#f0f6f1"/>
+<text x="95" y="670" font-size="36" font-weight="700" fill="#197967">Competitive Runners · CC0 · 74 participantes</text>
+<text x="95" y="725" font-size="31">Diario: 42,766 filas · 70 features · 583 etiquetas positivas fuente</text>
+<text x="95" y="775" font-size="31">Semanal: 42,798 filas · 66 features · 575 etiquetas positivas fuente</text>
+<text x="95" y="825" font-size="27">Sujetos: 44 / 15 / 15. Benchmark temporal adicional con purga de 7 / 21 días.</text>
+<text x="95" y="880" font-size="29" font-weight="700" fill="#963f1c">Día y semana se solapan: NO sumarlos como cohortes independientes.</text>
+<text x="60" y="980" font-size="27">PAMAP2: clasificación de actividad. Corredores: etiqueta fuente de lesión; sin modelo entrenado.</text>
+<text x="60" y="1030" font-size="29" font-weight="700" fill="#963f1c">Ninguna fuente valida automáticamente readiness, fatiga o prevención de lesiones.</text>
+<text x="60" y="1095" font-size="25" fill="#496170">Fuentes: doi.org/10.24432/C5NW2H · doi.org/10.34894/UWU9PV</text>
+<text x="60" y="1145" font-size="24" fill="#496170">docs/datos-reales-y-preparacion.md · Solo metadatos agregados, sin registros individuales.</text>
+</g></svg>

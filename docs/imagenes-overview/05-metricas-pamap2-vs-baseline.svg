@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1200" viewBox="0 0 1800 1200" role="img" aria-labelledby="title desc">
+<title id="title">PAMAP2: métricas reales de prueba frente al comparador trivial</title>
+<desc id="desc">Gaussian Naive Bayes: accuracy 0.5813492063492064, macro-F1 0.5282341727452816, balanced accuracy 0.5844057552916948. Dummy: 0.09325396825396826, 0.014216575922565032, 0.08333333333333333. Prueba de 504 ventanas de dos personas reservadas, sin reajuste.</desc>
+<rect width="1800" height="1200" fill="white"/>
+<g font-family="Segoe UI,Arial,sans-serif" fill="#172d39">
+<text x="60" y="85" font-size="46" font-weight="700">PAMAP2 · Resultado real en prueba reservada</text>
+<text x="60" y="138" font-size="28" fill="#496170">pamap2-activity-gnb-v1 · 504 ventanas / 2 participantes no usados para entrenar</text>
+<rect x="60" y="180" width="28" height="28" fill="#197dad"/><text x="105" y="204" font-size="27" font-weight="700">Gaussian Naive Bayes</text>
+<rect x="680" y="180" width="28" height="28" fill="#a7b2ba"/><text x="725" y="204" font-size="27">Comparador: clase más frecuente en train</text>
+<g font-size="32" font-weight="700"><text x="60" y="312">Accuracy</text><text x="60" y="512">Macro-F1</text><text x="60" y="712">Balanced accuracy</text></g>
+<g fill="#f1f4f7"><rect x="460" y="275" width="1100" height="45"/><rect x="460" y="335" width="1100" height="30"/><rect x="460" y="475" width="1100" height="45"/><rect x="460" y="535" width="1100" height="30"/><rect x="460" y="675" width="1100" height="45"/><rect x="460" y="735" width="1100" height="30"/></g>
+<g fill="#197dad"><rect x="460" y="275" width="639.484126984" height="45"/><rect x="460" y="475" width="581.057590020" height="45"/><rect x="460" y="675" width="642.846330821" height="45"/></g>
+<g fill="#a7b2ba"><rect x="460" y="335" width="102.579365079" height="30"/><rect x="460" y="535" width="15.638233515" height="30"/><rect x="460" y="735" width="91.666666667" height="30"/></g>
+<g font-size="29" font-weight="700" fill="#197dad"><text x="1585" y="309">58.13%</text><text x="1585" y="509">0.528234</text><text x="1585" y="709">58.44%</text></g>
+<g font-size="26" fill="#496170"><text x="1585" y="361">9.33%</text><text x="1585" y="561">0.014217</text><text x="1585" y="761">8.33%</text></g>
+<g font-size="23" fill="#496170"><text x="460" y="816">0</text><text x="986" y="816">0.5</text><text x="1545" y="816">1</text></g>
+<text x="60" y="862" font-size="25" fill="#496170">Barras: escala 0–1. Accuracy y balanced accuracy se expresan como %. Macro-F1, sin porcentaje.</text>
+<rect x="60" y="902" width="1680" height="135" rx="15" fill="#fff1e7"/>
+<text x="85" y="951" font-size="29" font-weight="700" fill="#963f1c">Fallos por clase: sentado 0/46; marcha nórdica 2/40; salto de cuerda 11/37.</text>
+<text x="85" y="1000" font-size="27">293 aciertos / 504, frente a 47 del comparador. No es readiness ni un modelo de producción.</text>
+<text x="60" y="1080" font-size="26" fill="#496170">Partición por sujeto 5/2/2; configuración congelada antes de prueba. Solo nueve participantes.</text>
+<text x="60" y="1132" font-size="24" fill="#496170">Fuente: evaluation.json y docs/primer-modelo-pamap2.md · Modelo: 5 nov; gráfico: 10 nov 2026.</text>
+</g></svg>

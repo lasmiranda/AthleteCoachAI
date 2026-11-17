@@ -1,0 +1,8 @@
+athlete_id,timestamp,timezone,sport_type,duration_min,distance_km,session_rpe,avg_hr_bpm,max_hr_bpm,resting_hr_bpm,hrv_ms,sleep_hours,fatigue,soreness,stress,elevation_m,exercise,muscle_group,sets,reps,load_kg,rir
+demo-alex,2026-10-25T08:00:00+00:00,UTC,rest,0,0,0,,,55,61,8,2,1,2,,,,,,,
+demo-alex,2026-10-26T08:00:00+00:00,UTC,run,45,8,4,142,190,54,63,7.8,2,2,3,40,,,,,,
+demo-alex,2026-10-27T08:00:00+00:00,UTC,strength,35,0,4,,,55,62,8,2,3,2,,Squat,legs,3,8,40,3
+demo-alex,2026-10-28T08:00:00+00:00,UTC,run,55,10,4,144,190,54,64,7.5,3,2,2,50,,,,,,
+demo-alex,2026-10-29T08:00:00+00:00,UTC,walk,30,2.5,2,,,55,62,8,2,1,2,,,,,,,
+demo-alex,2026-10-30T08:00:00+00:00,UTC,strength,35,0,4,,,54,63,8,2,2,2,,Row,pull,3,8,25,3
+demo-alex,2026-10-31T08:00:00+00:00,UTC,run,70,12.5,4,145,190,55,61,7.8,3,3,2,65,,,,,,

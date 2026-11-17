@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1530" viewBox="0 0 1800 1530" role="img" aria-labelledby="title description">
+  <title id="title">Corredores: primer clasificador experimental de etiqueta fuente</title>
+  <desc id="description">Test real congelado del modelo runners-day-logistic-v1. Personas separadas: 10546 ventanas de 15 personas, 150 positivas; AP modelo 0.017604 frente a 0.014223, ROC-AUC 0.584473. Al umbral 0.02: TN7631, FP2765, FN98, TP52. Temporal con purga: 7596 ventanas de 32 personas recurrentes, 122 positivas; AP0.021839 frente a0.016061, ROC-AUC0.587050. Matriz TN5603, FP1871, FN77, TP45. No es diagnóstico ni predicción clínica validada.</desc>
+  <style>
+    text { font-family: Arial, Helvetica, sans-serif; fill: #14283e; }
+    .title { font-size: 45px; font-weight: 700; }
+    .heading { font-size: 34px; font-weight: 700; }
+    .body { font-size: 28px; }
+    .small { font-size: 25px; }
+    .number { font-size: 64px; font-weight: 700; }
+    .muted { fill: #506477; }
+    .white { fill: white; }
+  </style>
+  <rect width="1800" height="1530" fill="#eef3f8"/>
+  <text x="60" y="77" class="title">Corredores: entrenamiento real, resultado todavía débil</text>
+  <text x="60" y="124" class="body">Etiqueta fuente del día t con variables de t−7 a t−1. Sin integración en AthleteOS.</text>
+  <rect x="55" y="151" width="1690" height="57" rx="12" fill="#fff0d9"/>
+  <text x="80" y="188" class="body">Investigación retrospectiva; score no calibrado. No demuestra riesgo clínico ni prevención.</text>
+
+  <rect x="55" y="230" width="825" height="1070" rx="20" fill="white"/>
+  <rect x="920" y="230" width="825" height="1070" rx="20" fill="white"/>
+  <text x="85" y="280" class="heading">Principal: personas separadas</text>
+  <text x="85" y="323" class="body">Test: 10,546 ventanas · 15 personas nuevas*</text>
+  <text x="85" y="363" class="body">150 positivas · prevalencia 1.4223%</text>
+  <text x="950" y="280" class="heading">Secundario: temporal con purga</text>
+  <text x="950" y="323" class="body">Test: 7,596 ventanas · 32 personas presentes</text>
+  <text x="950" y="363" class="body">122 positivas · prevalencia 1.6061%</text>
+
+  <text x="85" y="416" class="body">Average precision (AP) · escala común 0–0.04</text>
+  <text x="950" y="416" class="body">Average precision (AP) · escala común 0–0.04</text>
+  <text x="100" y="456" class="small">Logística: 0.017604</text>
+  <rect id="grouped-model-ap" x="100" y="470" width="286.062549" height="31" rx="5" fill="#087e8b"/>
+  <text x="100" y="538" class="small">Comparador negativo: 0.014223</text>
+  <rect id="grouped-dummy-ap" x="100" y="552" width="231.130286" height="31" rx="5" fill="#9ba9b5"/>
+  <text x="965" y="456" class="small">Logística: 0.021839</text>
+  <rect id="temporal-model-ap" x="965" y="470" width="354.887190" height="31" rx="5" fill="#087e8b"/>
+  <text x="965" y="538" class="small">Comparador negativo: 0.016061</text>
+  <rect id="temporal-dummy-ap" x="965" y="552" width="260.992628" height="31" rx="5" fill="#9ba9b5"/>
+  <path d="M100 600H750 M100 595V607 M262.5 595V607 M425 595V607 M587.5 595V607 M750 595V607 M965 600H1615 M965 595V607 M1127.5 595V607 M1290 595V607 M1452.5 595V607 M1615 595V607" fill="none" stroke="#718496" stroke-width="2"/>
+  <g class="small muted" text-anchor="middle">
+    <text x="100" y="635">0</text><text x="262.5" y="635">.01</text><text x="425" y="635">.02</text><text x="587.5" y="635">.03</text><text x="750" y="635">.04</text>
+    <text x="965" y="635">0</text><text x="1127.5" y="635">.01</text><text x="1290" y="635">.02</text><text x="1452.5" y="635">.03</text><text x="1615" y="635">.04</text>
+  </g>
+  <text x="85" y="686" class="body">ROC-AUC 0.584473 · comparador 0.500000</text>
+  <text x="950" y="686" class="body">ROC-AUC 0.587050 · comparador 0.500000</text>
+  <text x="85" y="739" class="heading">Matriz · umbral congelado 0.02</text>
+  <text x="950" y="739" class="heading">Matriz · umbral congelado 0.02</text>
+  <g class="small" text-anchor="middle">
+    <text x="337.5" y="792">Predicción 0</text><text x="587.5" y="792">Predicción 1</text>
+    <text x="1202.5" y="792">Predicción 0</text><text x="1452.5" y="792">Predicción 1</text>
+  </g>
+  <g>
+    <rect x="220" y="810" width="235" height="145" rx="10" fill="#daedf2"/>
+    <rect x="470" y="810" width="235" height="145" rx="10" fill="#fff0d9"/>
+    <rect x="220" y="970" width="235" height="145" rx="10" fill="#fff0d9"/>
+    <rect x="470" y="970" width="235" height="145" rx="10" fill="#daedf2"/>
+    <rect x="1085" y="810" width="235" height="145" rx="10" fill="#daedf2"/>
+    <rect x="1335" y="810" width="235" height="145" rx="10" fill="#fff0d9"/>
+    <rect x="1085" y="970" width="235" height="145" rx="10" fill="#fff0d9"/>
+    <rect x="1335" y="970" width="235" height="145" rx="10" fill="#daedf2"/>
+  </g>
+  <g class="small">
+    <text x="90" y="881">Real 0</text><text x="90" y="1041">Real 1</text>
+    <text x="955" y="881">Real 0</text><text x="955" y="1041">Real 1</text>
+  </g>
+  <g text-anchor="middle">
+    <text id="grouped-tn" x="337.5" y="880" class="number">7,631</text><text x="337.5" y="925" class="small">TN</text>
+    <text id="grouped-fp" x="587.5" y="880" class="number">2,765</text><text x="587.5" y="925" class="small">FP</text>
+    <text id="grouped-fn" x="337.5" y="1040" class="number">98</text><text x="337.5" y="1085" class="small">FN</text>
+    <text id="grouped-tp" x="587.5" y="1040" class="number">52</text><text x="587.5" y="1085" class="small">TP</text>
+    <text id="temporal-tn" x="1202.5" y="880" class="number">5,603</text><text x="1202.5" y="925" class="small">TN</text>
+    <text id="temporal-fp" x="1452.5" y="880" class="number">1,871</text><text x="1452.5" y="925" class="small">FP</text>
+    <text id="temporal-fn" x="1202.5" y="1040" class="number">77</text><text x="1202.5" y="1085" class="small">FN</text>
+    <text id="temporal-tp" x="1452.5" y="1040" class="number">45</text><text x="1452.5" y="1085" class="small">TP</text>
+  </g>
+  <text x="85" y="1165" class="body">Precisión 1.85% · recall 34.67% · F1 0.035052</text>
+  <text x="85" y="1210" class="body">52 aciertos positivos / 2,817 alertas</text>
+  <text x="85" y="1255" class="small muted">Umbral 0.5: solo 1 / 150 positivos detectados.</text>
+  <text x="950" y="1165" class="body">Precisión 2.35% · recall 36.89% · F1 0.044161</text>
+  <text x="950" y="1210" class="body">45 aciertos positivos / 1,916 alertas</text>
+  <text x="950" y="1255" class="small muted">Umbral 0.5: ninguna alerta; precisión indefinida.</text>
+
+  <text x="60" y="1343" class="small">* Nuevas respecto a entrenamiento, no una cohorte externa. Temporal: personas pueden reaparecer.</text>
+  <text x="60" y="1385" class="small">AP no interpolada; empates agrupados. TN/TP: aciertos; FP/FN: errores. Colores categóricos, no escala.</text>
+  <text x="60" y="1427" class="small">Modelo: runners-day-logistic-v1 · Datos CC0: doi.org/10.34894/UWU9PV · Solo agregados.</text>
+  <text x="60" y="1469" class="small">Fuente: evaluación local congelada e informe primer-modelo-corredores.md · 11 noviembre 2026 UTC.</text>
+</svg>

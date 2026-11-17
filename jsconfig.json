@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "none",
+    "checkJs": true,
+    "allowJs": true,
+    "noEmit": true,
+    "strict": true
+  },
+  "include": ["web/app.js", "web/contracts.d.ts"]
+}
