@@ -8,5 +8,5 @@
     "noEmit": true,
     "strict": true
   },
-  "include": ["web/app.js", "web/contracts.d.ts"]
+  "include": ["web/app.js", "web/es.js", "web/charts.js", "web/week.js", "web/garmin.js", "web/sleep.js", "web/context.js", "web/organization.js", "web/personal.js", "web/contracts.d.ts"]
 }

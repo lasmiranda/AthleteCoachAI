@@ -1,6 +1,421 @@
 # AthleteOS Daily Coach
 
-A responsive, local full-stack MVP: **Today / Daily Mission, Dashboard, Goal, Adaptive Plan, Micro Wins and AI Coach**. The Python backend serves the actual frontend, validates normalized data, calculates features and saves changes. There is **no connected trained model, LLM or Garmin account**.
+A responsive, local full-stack MVP: **Today / Daily Mission, Dashboard, Goal, Adaptive Plan, Micro Wins and AI Coach**. The Python backend serves the actual frontend, validates normalized data, calculates features and saves changes. Daily readiness/dose remains heuristic; a separate, strictly gated **experimental5000m race predictor** can load actual local research artifacts. There is **no connected LLM or Garmin account**, nor four validated physiological predictors.
+
+## Interfaz en español
+
+### Sueño Garmin: carga explícita y asociación por fecha
+
+En **Mi objetivo → Subir sueño Garmin y vincular por fecha**, selecciona
+`Sleep.csv`, valida/previsualiza y confirma el guardado bajo el perfil elegido.
+No se importa el adjunto automáticamente. Declara formato `hmin` (p. ej.
+`7h 12min`), pulso en reposo `bpm`, calendario/zona verificados, procedencia,
+significado de la fecha (despertar o etiqueta de noche) y día asociado
+(misma fecha, anterior o siguiente). Ninguna convención viene preseleccionada.
+
+Primera columna `Date` o `Sleep Score N Weeks/Months`, con fechas ISO
+`AAAA-MM-DD`; `Score`, `Duration` y `Resting Heart Rate` son obligatorias.
+UTF-8/BOM, hasta 1,5 MB y 5.000 filas. Vacíos/`--` son `null`, no cero.
+`Duration` no se calcula desde Bedtime/Wake Time; esas horas locales no
+generan timestamps UTC. Se conservan campos fuente pertinentes, incluido
+Skin Temp Change con signo/apóstrofo/grados sin asumir escala térmica.
+
+La previsualización muestra noches, duración, pulso y número de actividades
+registradas en cada fecha asociada: conserva sesiones múltiples, solo enlaza
+procedencia/calendario declarados idénticos y avisa otros calendarios sin
+convertirlos. Cero coincidencias no demuestra descanso ni export completo.
+Reimportar filas equivalentes no duplica noches. Filas distintas para una
+misma noche dentro del archivo se rechazan; conflictos con sueño ya guardado
+requieren confirmar conservar o reemplazar, con versión previa archivada.
+Cambiar una declaración de una noche ya guardada se rechaza, no reinterpreta
+datos. El token caduca en 15 minutos y se invalida al cambiar archivo,
+declaraciones, perfil o datos de sueño/actividades asociados.
+
+`garmin_sleep_data` permanece privado, separado de diarios/check-ins,
+actividades, modelos, planes y snapshots; solo el guardado confirmado escribe
+ese bloque. La API de vista devuelve cobertura y contexto de hasta las últimas
+31 noches por calendario/procedencia, no CSV, horas de acostarse/despertar,
+metadatos HRV, campos fuente adicionales o archivo de versiones.
+HRV Status no se interpreta como RMSSD/ms/valor nocturno o promedio de siete
+días: metadatos opcionales se dejan todos vacíos si son desconocidos; aportarlos
+no activa baseline ni inferencia. Sueño/reposo son contexto, no inputs diarios
+completos. Score, Sleep Need y Body Battery no miden recuperación funcional,
+ni este archivo estima eficacia o retorno del plan.
+
+Validación focalizada: `python -m unittest tests.test_garmin_sleep
+tests.test_garmin_activities -q` y
+`node --test tests\sleep-upload.test.cjs tests\personal-evidence.test.cjs`.
+
+### Archivo de actividades Garmin en Mi objetivo
+
+En **Mi objetivo** (`#goal`), selecciona el CSV Activities, declara las unidades
+Distance (km/millas en carrera/caminata), Time (h:mm:ss o m:ss, con fracciones
+de segundo opcionales), HR (bpm), zona de las fechas y procedencia. Valida y
+previsualiza; después confirma el guardado bajo el perfil seleccionado. No se
+importan adjuntos automáticamente ni se conecta una cuenta Garmin.
+
+Cabeceras únicas obligatorias: `Activity Type,Date,Time`; Date debe ser
+`AAAA-MM-DD HH:MM:SS`. Se admiten UTF-8/BOM, hasta 1,5 MB y 10.000 filas,
+comas de miles entre comillas, faltantes vacíos/`--` y el signo/apóstrofo
+de `Body Battery Drain`. Los títulos con comillas propias del exportador
+no se utilizan ni guardan; se validan el número de columnas y los campos
+analizados. UTC, offsets verificados ±HH:MM o zonas IANA disponibles localmente;
+no se infieren unidades, ubicación ni cambios de horario.
+
+Las sesiones quedan separadas en `garmin_data`, dentro del estado local privado.
+No reemplazan registros diarios, planes, check-ins o predicciones. La huella de
+todos los campos de cada fila, normalizados solo en espacios externos, evita
+reimportaciones idénticas; sin ID Garmin no puede distinguir dos sesiones
+idénticas ni reconocer una fila editada como la misma actividad. Declaraciones
+diferentes para una huella ya guardada se rechazan, nunca se sobrescriben.
+
+Los cuatro resultados son **descriptivos**: ritmo de Running con tiempo/distancia
+positivos, constancia/series/repeticiones de fuerza, frecuencia cardíaca media
+por sesión como contexto y minutos registrados como volumen. No representan
+mejora comprobada en 5000 m, kg/% de músculo, recuperación IMVC ni lesiones
+evitadas. Los gráficos son semanas registradas (hasta las últimas 52); las
+ventanas comparadas terminan en la última fecha del archivo. No se mezclan
+procedencias o calendarios; huecos y datos faltantes no son descanso.
+La API devuelve agregados del perfil, no CSV, títulos o sesiones individuales;
+no hay envío externo. No alimenta modelos o recomendaciones de dosis.
+
+Validación: `python -m unittest discover -s tests -p test_garmin_activities.py`
+y `node --test tests\garmin-upload.test.cjs`.
+
+### Mi objetivo: datos, resultados, plan y proyección
+
+**HRV CSV** admite `Date,Overnight HRV,Baseline,7d Avg`, con fechas inglesas
+como `Nov 20` y celdas en `ms`. Se declara un año para todas las filas y el
+calendario del export; archivos que crucen años deben separarse por año.
+Se guardan la HRV nocturna, media móvil 7d y rango propietario por separado.
+`ms` no identifica RMSSD, dispositivo o protocolo. La fecha se conserva como
+etiqueta Garmin, sin desplazarla ni crear un instante UTC. Ninguna de estas
+series activa un baseline, readiness, entrada normalizada o modelo.
+
+**Ritmo CSV** admite el export de dos cabeceras: `Average Pace`, luego
+`,Value,Pace`, y filas `YYYY-MM-01,6.10,6:06 /km`. Son períodos mensuales,
+no sesiones del día 1. `Value` decimal y `Pace` redondeado deben concordar
+con tolerancia de redondeo de 0,8 s/km; se muestra la precisión del texto,
+sin transformarla en una marca de carrera. El gráfico usa meses disponibles
+(máximo 60 en la vista), separado de la ventana diaria de 30 días;
+el mes actual puede ser parcial y la cobertura/ponderación Garmin es desconocida.
+
+Ambos usan selección → validación/previsualización → confirmación privada
+por perfil. Token de 15 minutos ligado a archivo/declaraciones/perfil/estado
+Garmin asociado; reimportaciones equivalentes deduplican. Conflictos necesitan
+confirmación para conservar o reemplazar con historial privado. Actividades,
+sueño, check-ins, planes y capturas de modelos no se reescriben.
+
+Los botones **Cargar datos demo** y **Cargar datos del dataset** cambian sólo
+la fuente de visualización en Mi objetivo, Panel y Plan adaptativo.
+Demo es un ejemplo ficticio y de sólo lectura, con valores/dosis supuestos;
+no usa modelos para pronosticar beneficios. Dataset abre agregados congelados
+reservados de los estudios usados al desarrollar los modelos, con observado/
+estimado, errores y comparadores; no carga individuos ni filas de entrenamiento
+en el perfil. **Mis datos** vuelve al almacenamiento privado del atleta.
+
+**Mi objetivo** reúne una sola pantalla Precision Blue, en este orden:
+**Tus datos** (CSV Activities/Sleep/HRV/ritmo, otros formatos y objetivo en detalles),
+**Evaluación de los resultados** (cuatro tarjetas), **Propuesta · próximos
+7 días**, **Entrenamiento previsto** y **Proyección de resultados**. El Panel muestra los mismos valores en gráficos
+explicativos, con fechas, fuente y unidades. Formularios, metodología y fuentes
+permanecen plegados; la conexión oficial Garmin está inactiva y marcada futura.
+Las tarjetas muestran **Ritmo registrado** (promedios mensuales disponibles),
+**Entrenamiento de fuerza** (sesiones/series exportadas), **Sueño y HRV**
+(duración y HRV nocturna, en escalas separadas) y **Seguimiento de carga**
+(minutos/actividades/km registrados, no carga sRPE sin RPE).
+Son mediciones/contexto exportados, no resultados musculares, riesgo de lesión
+ni beneficios atribuidos al entrenamiento. No se rellena un campo ausente con
+cero ni se grafica una noche faltante como observada.
+Garmin ofrece contexto de ritmo/constancia/HR/volumen, no resultados oficiales
+de5000m, biopsias, IMVC o las escalas originales del clasificador. Cuando esos
+inputs no existen, se explica el requisito concreto; nunca se interpreta su
+ausencia como «no hubo mejora».
+
+La ventana de actividades/sueño/HRV incluye `hoy − 29 días` hasta `hoy`, sobre las fechas
+personales, sin usar como ancla la última actividad Garmin. Un par comparado debe
+tener ambas mediciones dentro de la ventana; se muestran fechas disponibles si
+hay menos historia. Una sola medida se conserva sin gráfico de evolución ni
+conclusión de mejora. Las fechas futuras y resultados anteriores a la ventana
+no se desplazan para llenar tarjetas.
+
+La dirección favorable/desfavorable/sin cambio se aplica solo a mediciones
+propias comparables bajo contratos existentes. Los pares de pruebas
+estandarizadas conservan las fechas de las dos mediciones elegibles y la
+comparabilidad declarada de distancia/protocolo/dispositivo/terreno/esfuerzo;
+no se convierten en carreras NRCD. Las capturas anteriores usan sus entradas
+inmutables, contrato/unidad/horizonte fuente y primera observación emparejada,
+no reconstrucciones del CSV actual. Direcciones numéricas no implican
+significación, relevancia clínica ni causalidad.
+
+**Laboratorio / investigación** conserva cambios observados y
+estimados, soporte por personas/pares, errores, comparadores y hallazgos
+desfavorables congelados. Los gráficos de cohortes no son tu serie temporal.
+No se entrena ni se adquieren datos al abrir estas vistas.
+
+El área **Fuerza y progreso muscular** separa actividad registrada, fuerza
+medida y medición muscular. Los CSV Garmin actuales muestran sesiones/series,
+no un porcentaje de fuerza ganada: falta un par de pruebas con el mismo
+ejercicio, repeticiones, técnica y protocolo. Epley y cambios de volumen no
+sustituyen esas pruebas. El dataset conserva el porcentaje auditado de
+**cambio del área de fibras** en30personas a6semanas: media de los cambios
+relativos de cada persona, con disminuciones incluidas, observado/estimado
+y comparadores visibles; no progreso personal ni fuerza ganada. El modelo
+DXA sigue experimental/no promovido y estima masa libre de grasa, no fuerza.
+Constancia/cumplimiento requiere un plan previo versionado y sesiones vinculadas;
+una ausencia en el CSV no equivale a incumplimiento.
+
+Las cuatro tarjetas diferencian título, icono, color y unidades. La comparación
+anterior → actual usa los dos meses de ritmo exportados, dos ventanas explícitas
+de7d para sesiones de fuerza/minutos registrados y las dos últimas noches con
+valores de sueño/HRV (en escalas separadas). Son diferencias descriptivas,
+con fechas y soporte, no efectos del plan; las ventanas de actividades pueden
+ser parciales. Si falta una ventana, hay calendarios de sueño ambiguos o falta
+duración de una actividad, no se reemplaza por cero ni se calcula su diferencia.
+No se combinan las cuatro áreas en un porcentaje global.
+
+La sección **Entrenamiento previsto** muestra sólo
+la ejecución computable: bloques, límite de minutos y gráfico por fecha.
+La organización CSV no inventa UA porque no dispone de RPE. Son metas de
+ejecución, no pronósticos fisiológicos: **el beneficio de
+adherirse al plan no es estimable con los modelos actuales**. Pronósticos
+experimentales compatibles ya guardados se conservan únicamente en detalles,
+con fecha/captura, sin presentarlos como efecto de ejecutar el plan ni metas
+como resultado futuro. Un punto a seis semanas no se interpola a una semana/mes.
+La propuesta CSV se calcula automáticamente, sin entrada manual de sesiones,
+con `athleteos/weekly_organization.py`, versión `garmin-week-organization-v1`.
+Es organización conservadora provisional, no una política aprendida o
+clínicamente validada. Usa exclusivamente sesiones reales declaradas del
+calendario del perfil y tipos con duración conocida, nunca HR/TE como RPE.
+
+Requiere última sesión a máximo3d, al menos8 sesiones/6 fechas y14d de extensión
+en21d: cortes operativos locales, no umbrales científicos validados.
+Por tipo, frecuencia máxima = mínimo entre conteo7d y mediana de3 ventanas7d;
+minutos máximos por bloque = mediana21d redondeada hacia abajo y limitada por
+minutos registrados7d/frecuencia. La suma nunca supera minutos registrados7d.
+Se organizan bloques de fuerza en fechas no consecutivas, sin asumir músculos,
+ejercicios/kg/series/RIR o48h exactas entre sesiones. No se aumenta intensidad.
+Sueño reciente ausente o bajo el corte existente provisional6h reserva primero
+una revisión; los huecos restantes son revisión sin dosis, no descanso observado.
+HRV nocturna/media7d/rango propietario se mantienen contextuales: no ajustan
+dosis sin protocolo verificado. Walsh, Foster, Buchheit, Saw, IUSCA e
+Impellizzeri orientan registro/cautela; **no validan estas fórmulas/cortes**.
+Datos antiguos/insuficientes producen abstención explícita, no fechas movidas.
+
+La aceptación guarda una versión privada separada en `garmin_week_plans`,
+ligada a perfil/fecha/digest de los registros. No sobrescribe `athlete.plan`,
+check-ins, CSV ni capturas; cambios reales posteriores requieren revisar la
+nueva propuesta. Reimportar valores equivalentes no cambia ese digest.
+Sin RPE, la organización no se transforma en una sesión del motor diario con
+RPE ficticio: intensidad y adaptación interna diaria siguen no estimables.
+
+### Medición elegida y proyección de resultados
+
+El propósito es utilizar IA y evidencia científica para estimar resultados,
+apoyar decisiones de entrenamiento y evaluar su beneficio prospectivamente:
+**Estimar → Apoyar decisiones → Medir resultados**. Es el objetivo del proyecto,
+combinando evidencia científica y modelos entrenados con datos deportivos,
+no una afirmación de beneficio personal ya demostrado. En la pantalla se distingue la
+organización actual por reglas del registro de predicciones compatibles anteriores
+al outcome y su comparación posterior; registrar el circuito no lo valida
+prospectivamente ni convierte al modelo en selector del plan.
+
+La página de Pequeños logros está oculta temporalmente: `#wins` redirige a
+Hoy, conservando perfil y datos. Sus registros, reglas y APIs siguen intactos.
+**Laboratorio** muestra evaluación de modelos con datos de estudios y errores;
+**Demostración** usa escenarios ficticios para explorar la interfaz, no resultados
+personales ni prueba de eficacia. Las cifras no disponibles permanecen sin curva,
+con una nota breve de validación pendiente; la orientación científica del plan
+no se presenta como garantía individual.
+
+Mi objetivo sigue tres bloques: **01 · Tus resultados**, con cuatro indicadores
+registrados y comparaciones fechadas; **02 · Tu entrenamiento**, con los siete
+días de la versión vigente; **03 · Tu proyección**, separando la meta guardada
+de las salidas compatibles del modelo. La ilustración del objetivo no es una
+curva de mejora ni fija ocho semanas cuando el modelo no admite ese horizonte.
+03 muestra únicamente pronósticos personales compatibles, con Actual → Estimado,
+cambio, unidad, fecha y horizonte. No se muestran tarjetas vacías; los requisitos
+por área quedan en «Datos para una estimación personal». Los beneficios
+esperados cualitativos no se convierten en porcentajes ni resultados calculados.
+En **Mi objetivo → Mis datos**, directamente debajo de 03 se muestran
+**Resultados de referencia: modelos y estudios**, con cuatro tarjetas cuantificadas
+cargadas automáticamente, sin cambiar la fuente ni sustituir los datos personales.
+El selector **Dataset** conserva la vista independiente de esas mismas tarjetas.
+La vista muestra ambas categorías F/M de 5000 m, área de fibras a seis semanas,
+IMVC relativa de 24 a 48 horas y conteos de detección de etiquetas de lesión.
+Las fuentes, unidades y errores frente a comparadores permanecen visibles;
+esas referencias no se presentan como respuesta personal a cumplir un plan.
+Los archivos y el editor siguen disponibles en «Datos, archivos y objetivo».
+
+«Ver día» y «¡Empieza hoy!» abren **Plan adaptativo** sobre la misma fuente,
+fecha y versión, sin aceptar ni guardar sesiones. Cada día detalla su dosis
+original, el motivo de inclusión, un beneficio esperado **cualitativo** y cómo
+seguir la respuesta. La política CSV organiza tiempo y tipos, no ejercicios ni
+intensidades desconocidas; los días de revisión y los huecos permanecen distintos
+del descanso explícito. La aceptación por versión y el editor opcional se
+conservan en el resumen plegado. Los colores identifican áreas de seguimiento,
+no porcentajes de eficacia.
+
+`GET /api/athletes/{id}` incluye `outcome_forecasts` (`outcome-selection-v1`),
+sin escribir plan, CSV ni snapshots. Separa `observed`, pronóstico factual
+`forecast` y `planned_exposure`; este último sólo contiene fechas/límites
+de tiempo de la versión aceptada o propuesta existente.
+
+Se elige tiempo de **5000 m comparable** para rendimiento; **cambio de fuerza
+en la misma prueba** con baseline positivo para fuerza; **duración de sueño**
+como indicador autónomo (HRV nocturna separado, no función muscular) para
+seguimiento; y **probabilidad de un evento de lesión definido** únicamente
+si existe modelo compatible/calibrado. Fuerza admite ahora pruebas comparables
+reales, pero no tiene modelo validado: sesiones, Epley, DXA y área de fibras no
+sustituyen ese outcome.
+
+La organización `garmin-week-organization-v1` usa tipo/fecha/frecuencia/duración
+de actividades y sueño reciente para revisar el día inicial. No usa ritmo
+mensual, resultados previstos, HRV/7d Avg/rango Garmin o clasificación Runners
+para decidir dosis. El corte de sueño y minutos de bloque son reglas operativas,
+no dosis/umbrales validados por los papers. Las fuentes y entradas por área
+son visibles en los detalles de **Proyección de resultados**.
+
+Los cinco meses de ritmo no son pruebas de5000m; las sesiones no son cambios
+de fuerza. Hay sueño registrado, pero no modelo autónomo validado temporalmente:
+27 noches de un atleta no se convierten en27 personas ni se usan promedios móviles
+futuros como entradas. Haun3RM no resuelve unidad/protocolo/outcome posterior
+compatibles, y DXA/fibras permanecen investigación de sus targets originales.
+Runners no aporta probabilidad clínica personal calibrada. No se hacen nuevos
+fits sólo para llenar curvas.
+
+Si el adaptador existente de5000m ya valida origen/población/protocolo,
+fecha y rango, se conserva su salida factual experimental con baseline,
+horizonte, fuente y errores/comparador. No controla entrenamiento, no tiene
+intervalo individual validado y **no estima el efecto de cumplir el plan**.
+Si su error no mejora repetir el resultado previo, la salida queda en detalles
+de investigación y no se promueve a una gráfica principal.
+Entradas fuera de rango, sintéticas o sin baseline mantienen abstención;
+un contrato inconsistente produce error explícito, no un simulador sustituto.
+
+### Registro de fuerza comparable y revisión prospectiva
+
+En **Centro de datos**, la sección plegada de pruebas de fuerza importa
+mediciones ya realizadas de carga 3RM (kg) o fuerza isométrica instrumental (N).
+Exige ejercicio/equipo/procedimiento/calendario explícitos y procedencia por fila.
+No indica realizar pruebas máximas ni calcula fuerza a partir de Garmin.
+La misma tarjeta de fuerza muestra el par comparable, unidad, fechas y cambio
+con signo; sin ese par conserva sólo la actividad disponible. No añade paneles
+técnicos a la portada ni produce pronósticos.
+
+`strength-tests-import` conserva datos privados por protocolo, con guardado
+atómico, duplicados exactos y conflictos rechazados sin sobreescribir.
+`strength-assessment` conserva baseline/corte antes de una revisión futura
+ya planificada y vincula el primer resultado importado del mismo protocolo/fecha.
+Una copia de la organización aceptada conserva límites/versión/cobertura,
+no dosis realizadas ni adherencia; no se repite una semana para llenar el horizonte.
+Todos los campos de pronóstico/error siguen `null`. Esta ruta cierra la brecha
+de adquisición y temporalidad personal, **no valida un modelo de respuesta**.
+
+Contrato y límites: [pruebas de fuerza](docs/strength-observations-schema.md);
+API `GET /api/athletes/{id}` devuelve `strength_observations` sin CSV/source_ref.
+`/strength-template.csv` descarga sólo la cabecera, sin registros fabricados.
+
+El editor original permanece opcional, plegado, no como requisito de generación.
+No se repite, aumenta ni guarda una semana automáticamente. **El beneficio
+no es estimable con los modelos actuales**: falta un modelo de intervención–
+respuesta validado y compatible con estas entradas, no una fórmula extra de presentación. Las sugerencias mantienen
+las reglas provisionales actuales y sus fuentes; no usan Garmin como RPE
+ni recomiendan biopsias/inmersión, zonas por HR medio o +10% automático.
+
+### Modelo experimental de respuesta a seis semanas
+
+Se entrenó `haun-dxa-dose-response-v1` con **31 pares reales PRE/W6**:
+masa libre de grasa/hueso por DXA (kg) y seis volúmenes semanales realizados.
+Los suplementos SDC1/SDC2 de Haun2018 se adquirieron explícitamente bajo
+CC BY4.0 (28.962/11.438 bytes), con SHA256/MD5 verificados. Son la misma
+cohorte de la investigación anterior:30 participantes compartidos, no otra
+validación externa. Los originales y pesos permanecen en `.research-data`.
+
+El protocolo `research_data\training_response_protocol_v1.json` y la
+partición por personas se congelaron **antes de ajustar**:21 development,
+10 reservados; selección de alpha sólo por LOO development. Se comparan
+ridge baseline-only y baseline+dosis con persistencia, constante y cambio
+medio del development. Error reservado MAE: **1,2085kg con dosis vs1,2317kg
+sin dosis**, frente a2,723kg de persistencia y1,2684kg de cambio constante.
+La diferencia de0,0232kg es error predictivo, **no23g de músculo ganado**;
+no establece importancia clínica, causalidad ni un intervalo personal.
+
+La evaluación utiliza volumen **realizado después de PRE**. Usarlo como
+plan futuro supone igual cumplimiento, ejercicios/pesos/repeticiones y
+protocolo; eso no se validó prospectivamente. La unidad física del volumen
+distribuido aún requiere confirmación: se retienen unidades nativas sin
+inventar kg/lb. Tampoco DXA equivale a músculo puro: incluye efectos del agua.
+No se promueve sobre Garmin ni se convierte de seis semanas a siete días.
+Tus CSV no proporcionan baseline DXA o dosis ejercicio×reps×peso compatible.
+
+`GET /api/training-response-capability` verifica artefactos y separa
+pronóstico factual experimental, pronóstico personal del plan **no disponible**
+y efecto causal **no identificado**, con brechas concretas para las cuatro
+áreas. Si falta/cambia el artefacto devuelve503, nunca una curva sustituta.
+No hay endpoint personal de inferencia ni autoguardado de planes/snapshots.
+Resultados agregados: `docs\training-response-model-v1.json` y
+`docs\training-response-capability-v1.json`. Replay sin fits:
+
+```powershell
+python -m research_data.training_response replay
+```
+
+El flujo inicial fue `acquire` → `declare` → `train`; se rechaza repetir o
+sobrescribir una declaración/fit existente. No se modifican modelos,
+métricas reservadas ni datos personales previos.
+
+**Qué datos necesito aportar** distingue Garmin (sueño diario, índice/dispositivo/
+protocolo de VFC nocturna, pulso en reposo, vueltas), registros manuales
+(RPE/fatiga/recuperación con escala; ejercicio/series/reps/kg/RIR) y mediciones
+externas comparables (5000m, músculo, función, historial de lesión). Declara el
+estado del registro diario propio y la falta de validación intervención–respuesta.
+No se pide obtener biopsias. **No hay parser directo FIT/TCX ni vueltas**;
+Sleep.csv tiene el importador contextual separado
+descrito arriba. Activities conserva todas las sesiones; no se suman RPE
+para rellenar el contrato diario de una observación/día.
+
+Las tarjetas identifican **propuesta automática/organización aceptada**; los iconos indican
+objetivos, no beneficios. Las sugerencias existentes siguen siendo reglas
+provisionales y la orientación de papers no es una política
+aprendida por los modelos. Sin evidencia diaria compatible no se prescribe una
+semana; fechas sin sesión permanecen pendientes, y planes anteriores no se
+reubican. Ver plan completo abre el editor existente con confirmación/versionado.
+
+Validación focalizada: `node --test tests\personal-evidence.test.cjs` y
+`python -m unittest discover -s tests -p test_task_models.py`.
+Pruebas de navegación y layout con servidor/store desechables:
+`npm run test:browser -- tests\personal-layout.spec.cjs`.
+El fixture de interfaz sólo comprueba renderizado; no ejecuta inferencia ni
+persiste mediciones o planes en el perfil del usuario.
+
+La experiencia diaria abre en **Hoy**, con actividad realmente registrada, y el
+Panel reúne los cuatro resultados con requisitos desplegables y proyección
+preevento frente a resultado posterior. **Mi atleta** está separado del
+**Laboratorio**, cuyo botón ejecuta un ajuste local real con partición fija70/15/15
+por personas, sin promover pesos ni reutilizar tests históricos para tuning.
+Diseño, contratos causales, resultados agregados y límites:
+[experiencia diaria y proyecciones](docs/experiencia-diaria-y-proyecciones.md).
+
+**Resultados con datos reservados**, accesible desde Panel/Laboratorio (`#results`),
+compara predicción real, observación y persistencia del ensayo ya entrenado
+70/15/15 por personas. Incluye porcentajes efectivos, errores y gráficos agregados
+con al menos cinco atletas por grupo, sin exponer observaciones individuales.
+Recuperación conserva su evaluación leave-one-person-out; lesiones su resumen
+histórico congelado; hipertrofia sigue sin modelo. No se repitió el ajuste:
+[informe y límites](docs/resultados-reservados.md).
+
+**Hipertrofia de fibras y plan futuro:** se adquirió una única alternativa
+original CC BY4.0 (Haun2019,30personas) y se entrenó un ridge PRE→W6 por persona.
+Es área de fibras por **biopsia**, no ecografía ni kilos de músculo:
+MAE579,642µm² frente a676,677 de persistencia y532,213 de constante; no supera
+la constante. Plan adaptativo conecta metas con sesiones futuras revisables,
+sin optimizar dosis a partir de este modelo. [Resultados y decisiones](docs/hipertrofia-y-plan-futuro.md),
+[contrato CSV especializado](docs/hipertrofia-fibras-schema.md).
+
+La aplicación existente está en español: navegación, formularios, centro de datos, entrenador determinista, módulos especializados, inventario y los dos escenarios de presentación. Las fechas y números usan `es-ES`; el perfil diario sigue en UTC, mientras las actividades Garmin conservan el calendario declarado y separado de su archivo. `web/es.js` traduce textos completos y plantillas explícitas de presentación, incluidos los mensajes dinámicos del servidor, sin modificar datos guardados, capturas históricas, cálculos ni contratos. Los títulos bibliográficos originales, IDs/versiones de modelos, nombres de campos y cabeceras CSV se conservan; los valores de las opciones enviadas al backend tampoco se traducen.
+
+La interfaz distingue modelos no disponibles, datos insuficientes y entradas incompatibles: traducirla no añade predicciones ni habilita Garmin. Validación focalizada del catálogo, respuestas reales del backend y preservación de contratos: `node --test tests\localization.test.cjs`; comprobación de tipos: `.\node_modules\.bin\tsc.cmd -p jsconfig.json`.
 
 ## Real research data (separate from the demo)
 
@@ -19,6 +434,22 @@ python -m research_data verify .research-data\prepared\pamap2-protocol-v1
 All real records, archives and individual outputs stay in ignored **`.research-data\`** (approximately 2.05 GB for the original obtained sources and prepared tables, plus replay runs); do not commit or publish them. Existing prepared runs are never overwritten: choose a new `--output .research-data\prepared\...` to repeat. Acquisition/preparation needs no external Python dependencies or training. Pipeline tests use **synthetic fixtures only**.
 
 See the Spanish acquisition report/data dictionary, actual aggregate counts, licensing, citations, splits, hashes and limits in [`docs/datos-reales-y-preparacion.md`](docs/datos-reales-y-preparacion.md). Manifest: [`research_data/sources.json`](research_data/sources.json). **FitRec remains unacquired** pending academic/noncommercial-use and multi-GB transfer decisions; Garmin is an authorized API, not an open dataset; the hypertrophy review does not provide individual training labels. These disjoint datasets do not supply a validated Daily Coach readiness target.
+
+### Nuevas fuentes compatibles y modelos experimentales
+
+Se adquirieron fuentes originales **CC BY4.0**: NRCDv2.1.0(143.868resultados/31.786IDs;2003–2026), Bandiera(22personas/88visitas funcionales;pre/24/48/72h) y Baz-Valle/Balsalobre(8semanas;cohorte/columnas con discrepancias). El inventario pasa a **cinco fuentes**, conservando corredores diario/semanal como una sola cohorte.
+
+Protocolo previo fijo, datos reales y particiones por persona: dos ridge5000m por categoría fuenteF/M y uno de función IMVC relativa a48h. MAE modelo/persistencia: **44,718/35,394sF;27,992/26,369sM;5,207/5,148ppIMVC**. Ninguno supera la última medición. Los tres se guardaron/recargaron y su replay es idéntico; no se siguió afinando ni se volvió a puntuar el test antiguo.
+
+La app española incorpora un **CSV específico de carreras de5000m**, separado de actividades y pruebas estandarizadas, con origen, autorización, protocolo/población, fechas y rango observados. Solo produce estimación experimental cuando cumple el contrato y el artefacto íntegro existe; muestra también persistencia y limitaciones. Sintéticos nunca ejecutan el modelo. Recuperación personal sigue bloqueada hasta verificar métodos/unidades; hipertrofia no se entrena con su diccionario/cohorte ambiguos; lesión mantiene el gate de escala. No modifica recomendaciones de dosis.
+
+Informe: [modelos y datos compatibles](docs/modelos-y-datos-compatibles.md). [Inventario agregado actual](docs/inventario-datos-compatibles.json), [contrato personal5000m](docs/carreras-5000m-schema.md), [protocolo previo](research_data/compatible_protocol_v1.json). Pesos/originales/OOF individuales privados en `.research-data\models\compatible-outcomes-v1\` y `.research-data\raw\`; no se sirven ni publican.
+
+```powershell
+python -m research_data.compatible_training replay
+$env:PYTHONPATH='tests'
+python -m unittest test_compatible_sources test_compatible_training test_race_models -q
+```
 
 ### First local activity-classification model
 
@@ -54,7 +485,62 @@ The exact **70 raw daily source features** become 140 inputs after train-only me
 
 The commands were actually executed locally. Held-out grouped test: **AP 0.017604 vs comparator 0.014223, ROC-AUC 0.584473**; at the frozen validation threshold 0.02, **52/150 positives detected with 2,765 false positives** (precision 1.85%). This weak result is not deployable clinical prediction. The secondary temporal test permits recurring people and is reported separately, including its zero alerts at threshold 0.5. Shareable aggregate figure: [`docs/resultados-corredores.svg`](docs/resultados-corredores.svg).
 
+### Development-only comparisons v2 and measured performance outcomes
+
+`python -m research_data.benchmark run` fits a predeclared, bounded **three-fold participant-grouped comparison using only original train + validation**. Existing outputs are protected: use a new `--output .research-data\models\...` to repeat. The historical tests have already been observed and are **not scored again**. `python -m research_data.benchmark replay` validates saved model/code/data hashes and reproduces development metrics; it is not fresh independent validation.
+
+Actual development macro-F1: PAMAP2 base **0.655944**, dynamic/uniform **0.686645**; runner AP base **0.030716**, weekly-summary alternative **0.027924** (no improvement). All recipes, folds, participant variation, class failures and alert tradeoffs are reported, not just favorable results. See the [Spanish report](docs/mejora-modelos-y-rendimiento.md), [frozen protocol](research_data/benchmark_protocol_v2.json), [aggregate metrics](docs/resultados-desarrollo-v2.json), and [shareable aggregate figure](docs/resultados-desarrollo-v2.svg). New external confirmation remains pending; neither classifier establishes physiological improvement or prevention efficacy.
+
+The independent `research_data.performance` CLI supports **measured time/pace in a standardized comparable run**, not injury or muscle forecasts. PAMAP2/runner-injury schemas do not supply this target. It imports an explicitly authorized real outcome CSV, validates causal timestamps/comparable prior tests, reports eligibility, and refuses synthetic/insufficient training. Fitting under this **standardized-test contract** has not occurred; the newly fitted NRCD race models above use a separate, explicit race contract and never fabricate standardized-test fields. Follow the [outcome schema/authorization contract](docs/performance-schema.md); [sample CSV](samples/performance-outcomes-synthetic.csv) is conspicuously synthetic and **never eligible for real training**. All real records, authorization manifests and fitted models must remain in ignored `.research-data`.
+
+```powershell
+python -m research_data.performance import --source .research-data\performance\incoming\outcomes.csv --manifest .research-data\performance\incoming\authorization.json --output .research-data\performance\authorized-v1
+python -m research_data.performance train --imported .research-data\performance\authorized-v1 --output .research-data\models\performance-v1
+python -m unittest discover -s tests -p test_benchmark.py -v
+python -m unittest discover -s tests -p test_performance.py -v
+```
+
+These performance import/train commands do not implicitly download another dataset. **FitRec is still not downloaded**: its official metadata permits academic/noncommercial use only, prohibits redistribution, and describes multi-GB files; prospective test comparability still needs auditing. An optional isolated research dependency manifest is provided (`research_data\requirements.txt`), but normal package download failed TLS negotiation in this run. Both new CLIs run with the Python standard library; AthleteOS app setup and inference remain unchanged.
+
+### Literature-informed real runner training
+
+The separate [`research_data.literature_training`](research_data/literature_training.py) experiment connects the actual runner source columns to explicitly reviewed papers: raw70 logistic control versus raw70 plus21 predeclared exposure/variability/subjective-change descriptors. See the [Spanish evidence-to-feature/training report](docs/entrenamiento-informado-por-evidencia.md), [fixed protocol](research_data/literature_protocol_v1.json) and [bibliography/access scope](research_data/literature_sources_v1.json). Papers inform feature hypotheses and methodological safeguards; they are not labels, fixed physiological coefficients or proof of clinical benefit. No missing duration, sRPE/ACWR, HRV, sleep or measured muscle outcome is fabricated.
+
+```powershell
+python -m research_data.literature_training replay
+# Existing artifacts are protected; repetition needs a new ignored directory:
+python -m research_data.literature_training run --model .research-data\models\runners-literature-repeat-01
+python -m unittest tests.test_literature_training -q
+```
+
+This reuses the already observed v2 grouped **development** folds; no historical test rescoring or fresh independent validation. All six fitted models/transforms and frozen source/feature/code manifests stay private in `.research-data\models\runners-literature-v1\`. Its inference contract is an exact flat JSON dictionary of70 raw source columns, not demo CSV. It classifies the experimental source injury label, **not measured performance, muscle recovery or personal calibrated risk**, and does not change app recommendations or real-only performance eligibility.
+
+Actually executed: **six real-data fits**, save/reload, source-contract inference and identical replay. Mean development AP: **raw control 0.030716; literature-informed 0.030141**; the variant does **not** improve the predeclared primary metric. At fold-specific calibrated thresholds, false-positive windows increase from3,113 to5,908 while source positives detected increase from85/433 to157/433. See [all aggregate metrics](docs/resultados-entrenamiento-evidencia.json) and [comparison figure](docs/resultados-entrenamiento-evidencia.svg); no clinical/physiological benefit or replacement of the baseline is claimed.
+
+### Synthetic one-week CSV comparison (not model validation)
+
+The downloadable [SYNTHETIC-DEMO week package](samples/demo-semana/README.md) contains **42 app-normalized daily rows** (35 prior + 7 follow-up), a **separate five-test performance CSV**, an explicitly synthetic inspection manifest and calculated comparison JSON. The prescribed 5 km example changes **25:00 → 24:30 (−2% elapsed time)**; subjective soreness/fatigue also change by design, not by learned prediction. HRV/HR remain missing. This tests schema/import/calculations, **not training accuracy, measured muscle recovery or efficacy**. Neither existing source-specific classifier accepts these CSVs, and real performance fitting still rejects synthetics.
+
+```powershell
+python -m research_data.demo_week compare --input samples\demo-semana
+# Refresh only an isolated new package, using the actual completed UTC date:
+python -m research_data.demo_week generate --output samples\demo-semana-new
+python -m unittest discover -s tests -p test_demo_week.py -v
+```
+
+The generator never opens saved app state or trains/changes a model. Do not import over existing data: use a **new state file** and empty `demo-new` athlete as explained in the package. App CSV and research outcome CSV are different contracts; preserve their synthetic filenames/provenance, since the current app import label is only `CSV import`. Synthetic research inspection succeeds with **zero real eligible records**; training must remain blocked without a model artifact.
+
 ## Run
+
+### Personal CSV and separate specialized task adapters
+
+Dashboard now separates **running performance, experimental source injury label, functional recovery and hypertrophy**, including explicit missing-model/incompatible-input states, required contracts and the selected athlete's record counts/date coverage/origins. This does **not** invent four trained predictors: current readiness/dose heuristics are unchanged and never consume specialized scores. Garmin remains unconnected; CSV is the implemented input path.
+
+Data studio retains validated daily CSV import and adds a **separate comparable-test CSV + authorization JSON** using the existing performance research validators. It preserves only the selected person's tests locally, rejects foreign subjects/future or invalid rows atomically, distinguishes synthetic from declared real data, and shows observed comparisons, not forecasts. The runner model's exact70 source scales have no verified mapping from personal RPE/recovery, so its score is **not** computed for app records even when declared real. No study identities are fused with the user.
+
+Original two-cohort inventory (preserved within the new five-source snapshot): PAMAP2 Protocol **9 people /2,872,533 raw samples /3,833 five-second windows**, exact summed raw timestamp spans **7h58m45.24s**, useful prepared windows **5h19m25s**. Runners daily **42,766 event windows /74 people**, weekly **42,798 windows of the same cohort**; relative dates0..2673days, per-person span min/median/max42/800/2652days with gaps, not seven complete years each. Dataset/representation/split units must not be added as independent data.
+
+See [architecture, workflow, full count/split/time table and limitations](docs/datos-personales-y-modelos.md), [current aggregate snapshot](docs/inventario-datos-compatibles.json), [new source/model audit](docs/modelos-y-datos-compatibles.md), and [standardized-test schema](docs/performance-schema.md). Recovery and hypertrophy files are now acquired and audited: recovery has a source-only relative-function baseline with a personal protocol gate; hypertrophy remains untrained pending dictionary/cohort reconciliation. Models and sensitive records remain server-side/local; the frontend receives no weights or performance authorization manifests.
 
 Requires **Python 3.11+**. No Python dependencies or cloud credentials.
 
@@ -66,6 +552,26 @@ Open **http://127.0.0.1:8000**. Run from the repository root. Alternate port/sto
 
 ```powershell
 python -m athleteos.server --port 8001 --data .athleteos\another-demo.json
+```
+
+### Presentation demo: complete synthetic data without resetting your athlete
+
+Choose **Presentation demo** in the header/navigation, or open **http://127.0.0.1:8000/?presentation=build#presentation**. Switch **Build scenario / Recovery scenario**, then **Exit presentation** to return to your selected saved athlete. The scenario query survives reload; these what-if interactions are **transient, read-only**, not saved check-ins or accepted adjustments.
+
+**Proyecciones y plan de 7 días** remains the isolated presentation layout; personal Goal/Panel/Plan now use the measured CSV and automatic-organization workflow described above. The presentation retains four compact Precision Blue cards, real UTC date controls, seven original scheduled sessions, objective highlighting and a deterministic plan note. Missing dates say “Sin plan definido”, not rest; browsing or highlighting never accepts an adjusted dose. Personal model details use declared compatible observations and saved pre-outcome snapshots, not reserved study groups or demo values. Predictions are dated endpoints, not invented future trajectories; chosen goals remain distinct and no confidence bands are fabricated. Recovery has no personal IMVC inference contract, and load review never displays a clinical injury percentage. Synthetic mode instead shows explicitly assumed 5 km references, only the existing three readiness check-ins, planned strength volume in kg-repetitions and original planned load. The existing versioned editor remains optional; demonstrations retain read-only scenario details. Original evaluations, source inputs and comparators remain folded below.
+
+`GET /api/presentation?scenario=build|recovery` generates a separate deterministic 35-day synthetic fixture and seven-day plan relative to **today in UTC**. It never reads/writes the saved athlete store, overwrites edits, extends normal plans or reseeds normal histories. Declared synthetic device/protocol metadata and complete baseline coverage allow existing features and `demo-rules-v3` / `demo-heuristic-v3` to be demonstrated honestly. Invalid scenarios fail explicitly; fixture athlete IDs cannot be used for saved-athlete mutations. UTC and local dates can differ.
+
+The presentation shows goal/target, current calculated load and heuristic readiness, future planned dose, **assumed** pace/5 km time examples, hypothetical check-ins, planned direct sets/volume, and the existing evidence-informed overload review. Each future pace card/chart is labelled **“Simulated scenario — not a trained forecast”**. Pace = synthetic reference pace × stated scenario factor; illustrative time = pace × 5 km; assumed distance = planned duration / pace. These choices are assumptions, not learned coefficients or demonstrated improvement. Future recovery scores use only four explicitly assumed subjective inputs; no future HRV or measured recovery is fabricated. Strength volume is **kg-repetitions**, not kilograms of muscle gained; no mass-gain prediction or injury probability is supplied.
+
+Separate **Evaluated** cards read a reviewed public aggregate contract (`athleteos/model_evaluations.json`), with actual frozen PAMAP2/runner tasks, dates, splits, metrics and material failures. These are not predictions for the synthetic athlete. The API exposes neither private datasets nor trained artifacts; local `/reports/pamap2` and `/reports/runners` serve only aggregate public reports. Actual model training is demonstrated by reproducible reports/evaluation, **not by the aesthetics or favorable assumptions of this demo**.
+
+No trained model currently predicts the four physiological goals. Statistical activity/source-label classification does not establish performance improvement, injury prevention, muscle recovery or hypertrophy. Papers support monitoring/methods, not our exact provisional cuts, simulated trajectories or intervention efficacy.
+
+Focused synthetic/isolation checks:
+
+```powershell
+python -m unittest discover -s tests -p test_presentation.py -v
 ```
 
 The backend and frontend share one origin; no separate frontend development server is needed. The JavaScript/CSS are served directly without bundling. Ctrl+C stops the server.
